@@ -319,6 +319,7 @@ class Stem(layers.Layer):
         self.act = layers.Activation("swish")
 
     def call(self, inputs, training=None):
+        # print(f'inputs in the stem {inputs}')
         x = self.conv_stem(inputs)
         x = self.norm(x, training=training)
         x = self.act(x)
@@ -412,6 +413,7 @@ class EfficientNetV2(Model):
     #     return model.summary()
 
     def call(self, inputs, training=None):
+        # print(f'inputs is {inputs}')
         x = self.stem(inputs, training)
 
         # call for blocks.

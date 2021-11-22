@@ -13,18 +13,19 @@ assert tf.version.VERSION >= "2.4.0", "version of tf must greater/equal than 2.4
 
 def main():
     data_root = "/data/flower_photos"  # get data root path
+    data_root = "D:/Thinktron/EfficientNetV2/Data/Train"
 
     if not os.path.exists("./save_weights"):
         os.makedirs("./save_weights")
 
-    img_size = {"s": [300, 384],  # train_size, val_size
+    img_size = {"s": [256, 256],  # train_size, val_size
                 "m": [384, 480],
                 "l": [384, 480]}
     num_model = "s"
 
     batch_size = 8
     epochs = 30
-    num_classes = 5
+    num_classes = 2
     '''
     mod
     '''
@@ -48,7 +49,7 @@ def main():
     '''
     b, H, W, C
     '''
-    model.build((1, img_size[num_model][0], img_size[num_model][0], 3))
+    model.build((1, img_size[num_model][0], img_size[num_model][0], 17))
 
     # 下载我提前转好的预训练权重
     # 链接: https://pan.baidu.com/s/1Pr-pO5sQVySPQnBY8pQH7w  密码: f6hi
@@ -74,58 +75,9 @@ def main():
 
     model.summary()
 
-    # Stats
-    bands = list(range(len(band_names)))
-    # dim = tgp.get_raster_info(df_train['fp'].values[0])[:2]
-    dim = [512, 512]
-    # print(f'dim = {dim}, ')
-    n_channels = len(bands)
-    leu_classes_ipcc3 = 2 # Leu, others
-    # n_classes_ipcc2 = len(set(df_train['Y_ipcc2'].tolist() + df_test['Y_ipcc2'].tolist()))
-    # n_classes_ipcc3 = len(set(df_train['Y_ipcc3'].tolist() + df_test['Y_ipcc3'].tolist()))
-    print("dim", dim)
-    print("n_channels", n_channels)
-    # print("n_classes_ipcc2", n_classes_ipcc2)
-    # print("n_classes_ipcc3", n_classes_ipcc3)
-
-
-    # Generator
-    test_generator = DataGenerator(df['fp_npy_new'].values, df['Y_ipcc2'].values, df['Y_ipcc3'].values,
-                                   bands=self.bands, batch_size=batch_size, dim=self.dim, n_channels=self.n_channels,
-                                   n_classes1=self.n_classes_ipcc2, n_classes2=self.n_classes_ipcc3,
-                                   no_data_value=-999, augumentation=False, shuffle=False)
-
-    train_generator = DataGenerator_Leu(df_train['fp_npy'].values, df_train['Leu_label'].values, bands=bands, batch_size=batch_size,
-                                    dim=dim, n_channels=n_channels, n_classes1=leu_classes_ipcc3, no_data_value=-999, augumentation=True,
-                                    shuffle=True)
-    test_generator = DataGenerator_Leu(df_test['fp_npy'].values, df_test['Leu_label'].values, bands=bands, batch_size=batch_size,
-                                    dim=dim, n_channels=n_channels, n_classes1=leu_classes_ipcc3, no_data_value=-999, augumentation=True,
-                                    shuffle=True)
-
-
-
-
-    csv_logger = CSVLogger(os.path.join(current_model_dir, dt_str+"-1-model_history_log.csv"), append=True)
-    checkpoint = ModelCheckpoint(os.path.join(current_model_dir, dt_str+'-2-model-{epoch:03d}-{val_output1_accuracy:03f}-{val_output2_accuracy:03f}.h5'),
-                                verbose=1)#, monitor='val_output1_accuracy', save_best_only=True, mode='max')
-
-    # Training
-    STEP_SIZE_TRAIN=len(train_generator)
-    STEP_SIZE_VALID=len(test_generator)
-    history = model.fit_generator(generator=train_generator,
-                        initial_epoch=initial_epoch,
-                        steps_per_epoch=STEP_SIZE_TRAIN,
-                        validation_data=test_generator,
-                        validation_steps=STEP_SIZE_VALID,
-                        callbacks=[checkpoint, csv_logger],
-                        workers=8,
-                        use_multiprocessing=True,
-                        verbose=1,
-                        epochs=epochs)
-
-'''
-下面直接取代
-'''
+    '''
+    下面直接取代
+    '''
 
 
     # custom learning rate curve

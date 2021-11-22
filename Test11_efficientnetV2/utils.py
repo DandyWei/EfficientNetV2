@@ -2,7 +2,7 @@ import os
 import json
 import random
 
-import tensorflow as tf
+import tensorflow as tf, numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -25,13 +25,14 @@ def read_split_data(root: str, val_rate: float = 0.2):
     val_images_path = []  # 存储验证集的所有图片路径
     val_images_label = []  # 存储验证集图片对应索引信息
     every_class_num = []  # 存储每个类别的样本总数
-    supported = [".jpg", ".JPG", ".jpeg", ".JPEG"]  # 支持的文件后缀类型
+    supported = [".jpg", ".JPG", ".jpeg", ".JPEG", ".npy"]  # 支持的文件后缀类型
     # 遍历每个文件夹下的文件
     for cla in flower_class:
         cla_path = os.path.join(root, cla)
         # 遍历获取supported支持的所有文件路径
         images = [os.path.join(root, cla, i) for i in os.listdir(cla_path)
                   if os.path.splitext(i)[-1] in supported]
+        # print(f'images are {images}')
         # 获取该类别对应的索引
         image_class = class_indices[cla]
         # 记录该类别的样本数量
@@ -103,22 +104,29 @@ def generate_ds(data_root: str,
     AUTOTUNE = tf.data.experimental.AUTOTUNE
 
     def process_train_info(img_path, label):
-        image = tf.io.read_file(img_path)
-        image = tf.image.decode_jpeg(image, channels=3)
+        # image = tf.io.read_file(img_path)
+        # print(f'Eagertensor = {img_path}, numpy = {img_path.numpy()}')
+        image = np.load(img_path.numpy())
+        # print( f'images load = {image}')
+        # image = tf.image.decode_jpeg(image, channels=3)
         image = tf.cast(image, tf.float32)
         image = tf.image.resize_with_crop_or_pad(image, train_im_height, train_im_width)
         image = tf.image.random_flip_left_right(image)
-        image = (image / 255. - 0.5) / 0.5
+        # image = (image / 255. - 0.5) / 0.5
         return image, label
 
     def process_val_info(img_path, label):
-        image = tf.io.read_file(img_path)
-        image = tf.image.decode_jpeg(image, channels=3)
+        # image = tf.io.read_file(img_path)
+        image = np.load(img_path.numpy())
+        # image = tf.image.decode_jpeg(image, channels=3)
         image = tf.cast(image, tf.float32)
         image = tf.image.resize_with_crop_or_pad(image, val_im_height, val_im_width)
-        image = (image / 255. - 0.5) / 0.5
+        # image = (image / 255. - 0.5) / 0.5
         return image, label
 
+    # def process_train_info(img_path, label):
+    #     npy_file =
+    # def process_val_info(img_path, label):
     # Configure dataset for performance
     def configure_for_performance(ds,
                                   shuffle_size: int,
@@ -134,17 +142,26 @@ def generate_ds(data_root: str,
 
     train_ds = tf.data.Dataset.from_tensor_slices((tf.constant(train_img_path),
                                                    tf.constant(train_img_label)))
+    # print(f'train_ds {train_ds}')
+    # print(f'images path are {train_img_path[0]}, images labels are {train_img_label[0]}')
     total_train = len(train_img_path)
 
+
+    # from py functions
+    def load_image_wrapper_train(file, labels):
+        return tf.py_function(process_train_info, [file, labels], [tf.float32, tf.int32])
+
+    def load_image_wrapper_val(file, labels):
+        return tf.py_function(process_val_info, [file, labels], [tf.float32, tf.int32])
     # Use Dataset.map to create a dataset of image, label pairs
-    train_ds = train_ds.map(process_train_info, num_parallel_calls=AUTOTUNE)
+    train_ds = train_ds.map(load_image_wrapper_train, num_parallel_calls=AUTOTUNE)
     train_ds = configure_for_performance(train_ds, total_train, shuffle=True, cache=cache_data)
 
     val_ds = tf.data.Dataset.from_tensor_slices((tf.constant(val_img_path),
                                                  tf.constant(val_img_label)))
     total_val = len(val_img_path)
     # Use Dataset.map to create a dataset of image, label pairs
-    val_ds = val_ds.map(process_val_info, num_parallel_calls=AUTOTUNE)
+    val_ds = val_ds.map(load_image_wrapper_val, num_parallel_calls=AUTOTUNE)
     val_ds = configure_for_performance(val_ds, total_val, cache=False)
 
     return train_ds, val_ds

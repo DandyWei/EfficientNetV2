@@ -1,20 +1,17 @@
 from tensorflow import keras as keras
 # import keras
-from glob import glob
 import numpy as np
 from augementation import augmentation_image
 
 class DataGenerator(keras.utils.Sequence):
     'Generates data for Keras'
-    def __init__(self, list_fps_path, labels1, labels2, bands=None, batch_size=16, dim=(512, 512),
+    def __init__(self, list_fps, labels1, bands=None, batch_size=16, dim=(512, 512),
                                 n_channels=11, n_classes1=3, n_classes2=19, no_data_value=-999, augumentation=True, shuffle=True):
         'Initialization'
         self.dim = dim
         self.batch_size = batch_size
         self.labels1 = labels1
-        self.labels2 = labels2
-        # self.list_fps = list_fps
-        self.list_fps  = [path ]
+        self.list_fps = list_fps
         self.bands = bands
         self.n_channels = n_channels
         self.n_classes1 = n_classes1
@@ -33,8 +30,8 @@ class DataGenerator(keras.utils.Sequence):
         indexes = self.indexes[index*self.batch_size:(index+1)*self.batch_size] # Generate indexes of the batch
         list_fps_temp = [self.list_fps[k] for k in indexes] # Find list of IDs
         labels1_temp = [self.labels1[k] for k in indexes] # Find list of IDs
-        labels2_temp = [self.labels2[k] for k in indexes] # Find list of IDs
-        X, y = self.__data_generation(list_fps_temp, labels1_temp, labels2_temp) # Generate data
+        # labels2_temp = [self.labels2[k] for k in indexes] # Find list of IDs
+        X, y = self.__data_generation(list_fps_temp, labels1_temp) # Generate data
         return X, y
 
     def on_epoch_end(self):
@@ -141,8 +138,5 @@ class DataGenerator_Leu(keras.utils.Sequence):
             x = self.read_data(fp)
             X[i,] = x  # Store sample
             y1[i] = label1 # Store class
-
-        # if np.sum(np.isnan(X)):
-        #     print('nan warning X')
-        #     print('nan warning X')
+        print(f'x is {X.shape}, y1 {y1}, n cls {self.n_classes1}')
         return [X], [keras.utils.to_categorical(y1, num_classes=self.n_classes1)]

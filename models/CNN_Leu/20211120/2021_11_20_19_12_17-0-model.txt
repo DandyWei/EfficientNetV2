@@ -1,0 +1,93 @@
+Model: "efficientnetv2-s"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ stem (Stem)                 multiple                  3768      
+                                                                 
+ blocks_0 (FusedMBConv)      multiple                  5280      
+                                                                 
+ blocks_1 (FusedMBConv)      multiple                  5280      
+                                                                 
+ blocks_2 (FusedMBConv)      multiple                  25920     
+                                                                 
+ blocks_3 (FusedMBConv)      multiple                  93120     
+                                                                 
+ blocks_4 (FusedMBConv)      multiple                  93120     
+                                                                 
+ blocks_5 (FusedMBConv)      multiple                  93120     
+                                                                 
+ blocks_6 (FusedMBConv)      multiple                  96256     
+                                                                 
+ blocks_7 (FusedMBConv)      multiple                  165120    
+                                                                 
+ blocks_8 (FusedMBConv)      multiple                  165120    
+                                                                 
+ blocks_9 (FusedMBConv)      multiple                  165120    
+                                                                 
+ blocks_10 (MBConv)          multiple                  62480     
+                                                                 
+ blocks_11 (MBConv)          multiple                  173600    
+                                                                 
+ blocks_12 (MBConv)          multiple                  173600    
+                                                                 
+ blocks_13 (MBConv)          multiple                  173600    
+                                                                 
+ blocks_14 (MBConv)          multiple                  173600    
+                                                                 
+ blocks_15 (MBConv)          multiple                  173600    
+                                                                 
+ blocks_16 (MBConv)          multiple                  284832    
+                                                                 
+ blocks_17 (MBConv)          multiple                  401960    
+                                                                 
+ blocks_18 (MBConv)          multiple                  401960    
+                                                                 
+ blocks_19 (MBConv)          multiple                  401960    
+                                                                 
+ blocks_20 (MBConv)          multiple                  401960    
+                                                                 
+ blocks_21 (MBConv)          multiple                  401960    
+                                                                 
+ blocks_22 (MBConv)          multiple                  401960    
+                                                                 
+ blocks_23 (MBConv)          multiple                  401960    
+                                                                 
+ blocks_24 (MBConv)          multiple                  401960    
+                                                                 
+ blocks_25 (MBConv)          multiple                  494504    
+                                                                 
+ blocks_26 (MBConv)          multiple                  1011776   
+                                                                 
+ blocks_27 (MBConv)          multiple                  1011776   
+                                                                 
+ blocks_28 (MBConv)          multiple                  1011776   
+                                                                 
+ blocks_29 (MBConv)          multiple                  1011776   
+                                                                 
+ blocks_30 (MBConv)          multiple                  1011776   
+                                                                 
+ blocks_31 (MBConv)          multiple                  1011776   
+                                                                 
+ blocks_32 (MBConv)          multiple                  1011776   
+                                                                 
+ blocks_33 (MBConv)          multiple                  1011776   
+                                                                 
+ blocks_34 (MBConv)          multiple                  1011776   
+                                                                 
+ blocks_35 (MBConv)          multiple                  1011776   
+                                                                 
+ blocks_36 (MBConv)          multiple                  1011776   
+                                                                 
+ blocks_37 (MBConv)          multiple                  1011776   
+                                                                 
+ blocks_38 (MBConv)          multiple                  1011776   
+                                                                 
+ blocks_39 (MBConv)          multiple                  1011776   
+                                                                 
+ head (Head)                 multiple                  335362    
+                                                                 
+=================================================================
+Total params: 20,336,946
+Trainable params: 20,183,074
+Non-trainable params: 153,872
+_________________________________________________________________
