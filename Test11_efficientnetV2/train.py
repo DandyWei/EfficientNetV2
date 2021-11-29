@@ -150,11 +150,6 @@ def main():
                                                                                  train_accuracy.result())
 
 
-            c += 1
-            print(c)
-            if c == 7:
-                model.save_weights('my_model.h5')
-                exit(-1)
 
         # update learning rate
         optimizer.learning_rate = scheduler(epoch)
