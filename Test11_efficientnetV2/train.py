@@ -5,7 +5,7 @@ import glob
 import tensorflow as tf
 from tensorflow import keras
 from tqdm import tqdm
-
+from datetime import datetime as dt
 from model import efficientnetv2_s as create_model
 from utils import generate_ds
 
@@ -63,9 +63,9 @@ def main():
     # last_model_path = 'save_weights/'
     # model.load_weights(last_model_path, by_name=True, skip_mismatch=True)
     try:
-        weights_path = './save_weights/efficientnetv2'
-        assert len(glob.glob(weights_path+"*")), "cannot find {}".format(weights_path)
-        model.load_weights(weights_path)
+        # weights_path = './save_weights/efficientnetv2'
+        # assert len(glob.glob(weights_path+"*")), "cannot find {}".format(weights_path)
+        model.load_weights("my_model.h5")
         print(f"succese load from model path {weights_path}")
     except:
         print("no such a weight")
@@ -130,15 +130,16 @@ def main():
 
     best_val_acc = 0.
     for epoch in range(epochs):
-        train_loss.reset_states()  # clear history info
-        train_accuracy.reset_states()  # clear history info
-        val_loss.reset_states()  # clear history info
-        val_accuracy.reset_states()  # clear history info
+        # train_loss.reset_states()  # clear history info
+        # train_accuracy.reset_states()  # clear history info
+        # val_loss.reset_states()  # clear history info
+        # val_accuracy.reset_states()  # clear history info
 
 
 
         # train
         train_bar = tqdm(train_ds)
+        c = 0
         for images, labels in train_bar:
             train_step(images, labels)
 
@@ -147,6 +148,13 @@ def main():
                                                                                  epochs,
                                                                                  train_loss.result(),
                                                                                  train_accuracy.result())
+
+
+            c += 1
+            print(c)
+            if c == 7:
+                model.save_weights('my_model.h5')
+                exit(-1)
 
         # update learning rate
         optimizer.learning_rate = scheduler(epoch)
@@ -176,9 +184,11 @@ def main():
         # only save best weights
         if val_accuracy.result() > best_val_acc:
             best_val_acc = val_accuracy.result()
-            save_name = "./save_weights/efficientnetv2"
-            model.save_weights(save_name, save_format="tf")
-            model.save('my_model.h5')
+            now = dt.now()
+            # print(f"now is {now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}")
+            save_name = f"./save_weights/efficientnetv2_{now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}_{best_val_acc}.h5"
+            # model.save_weights(save_name, save_format="tf")
+            model.save_weights(save_name)
 
 
 if __name__ == '__main__':
