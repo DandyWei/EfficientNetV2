@@ -27,8 +27,9 @@ def main(ckpt_path: str,
 
 if __name__ == '__main__':
     model = efficientnetv2_s()
-    model.build((1, 224, 224, 3))
-    main(ckpt_path="./efficientnetv2-s-21k-ft1k/model",
+    model.build((1, 256, 256, 17))
+    #D:\Thinktron\EfficientNetV2\Test11_efficientnetV2\save_weights\efficientnetv2.index
+    main(ckpt_path="save_weights/efficientnetv2.ckpt",
          model_name="efficientnetv2-s",
          model=model)
 

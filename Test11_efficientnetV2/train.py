@@ -1,8 +1,9 @@
 import os
 import math
 import datetime
-
+import glob
 import tensorflow as tf
+from tensorflow import keras
 from tqdm import tqdm
 
 from model import efficientnetv2_s as create_model
@@ -12,9 +13,9 @@ assert tf.version.VERSION >= "2.4.0", "version of tf must greater/equal than 2.4
 
 
 def main():
-    data_root = "/data/flower_photos"  # get data root path
-    data_root = "D:/Thinktron/EfficientNetV2/Data/Train"
-
+    # data_root = r"/data/flower_photos"  # get data root path
+    # data_root = r"D:/Thinktron/EfficientNetV2/Data/Train"
+    data_root = r"D:/Datasets/Effi"
     if not os.path.exists("./save_weights"):
         os.makedirs("./save_weights")
 
@@ -23,9 +24,9 @@ def main():
                 "l": [384, 480]}
     num_model = "s"
 
-    batch_size = 8
+    batch_size = 32
     epochs = 30
-    num_classes = 2
+    num_classes = 20
     '''
     mod
     '''
@@ -59,8 +60,15 @@ def main():
     '''
     # pre_weights_path = './efficientnetv2-s.h5'
     # assert os.path.exists(pre_weights_path), "cannot find {}".format(pre_weights_path)
-    # model.load_weights(pre_weights_path, by_name=True, skip_mismatch=True)
-
+    # last_model_path = 'save_weights/'
+    # model.load_weights(last_model_path, by_name=True, skip_mismatch=True)
+    try:
+        weights_path = './save_weights/efficientnetv2'
+        assert len(glob.glob(weights_path+"*")), "cannot find {}".format(weights_path)
+        model.load_weights(weights_path)
+        print(f"succese load from model path {weights_path}")
+    except:
+        print("no such a weight")
     # freeze bottom layers
     '''
     no
@@ -79,8 +87,7 @@ def main():
     下面直接取代
     '''
 
-
-    # custom learning rate curve
+    #custom learning rate curve
     def scheduler(now_epoch):
         end_lr_rate = 0.01  # end_lr = initial_lr * end_lr_rate
         rate = ((1 + math.cos(now_epoch * math.pi / epochs)) / 2) * (1 - end_lr_rate) + end_lr_rate  # cosine
@@ -128,6 +135,8 @@ def main():
         val_loss.reset_states()  # clear history info
         val_accuracy.reset_states()  # clear history info
 
+
+
         # train
         train_bar = tqdm(train_ds)
         for images, labels in train_bar:
@@ -152,6 +161,8 @@ def main():
                                                                                epochs,
                                                                                val_loss.result(),
                                                                                val_accuracy.result())
+
+
         # writing training loss and acc
         with train_writer.as_default():
             tf.summary.scalar("loss", train_loss.result(), epoch)
@@ -165,8 +176,9 @@ def main():
         # only save best weights
         if val_accuracy.result() > best_val_acc:
             best_val_acc = val_accuracy.result()
-            save_name = "./save_weights/efficientnetv2.ckpt"
+            save_name = "./save_weights/efficientnetv2"
             model.save_weights(save_name, save_format="tf")
+            model.save('my_model.h5')
 
 
 if __name__ == '__main__':
