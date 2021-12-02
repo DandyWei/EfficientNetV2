@@ -171,13 +171,13 @@ def generate_ds(data_root: str,
         return tf.py_function(process_val_info, [file, labels], [tf.float32, tf.int32])
     # Use Dataset.map to create a dataset of image, label pairs
     train_ds = train_ds.map(load_image_wrapper_train, num_parallel_calls=AUTOTUNE)
-    train_ds = configure_for_performance(train_ds, 200, shuffle=True, cache=cache_data)
+    train_ds = configure_for_performance(train_ds, 1000, shuffle=True, cache=cache_data)
 
     val_ds = tf.data.Dataset.from_tensor_slices((tf.constant(val_img_path),
                                                  tf.constant(val_img_label)))
     total_val = len(val_img_path)
     # Use Dataset.map to create a dataset of image, label pairs
     val_ds = val_ds.map(load_image_wrapper_val, num_parallel_calls=AUTOTUNE)
-    val_ds = configure_for_performance(val_ds, 200, cache=False)
+    val_ds = configure_for_performance(val_ds, 1000, cache=False)
 
     return train_ds, val_ds

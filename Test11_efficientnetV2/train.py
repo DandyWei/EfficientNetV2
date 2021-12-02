@@ -6,8 +6,11 @@ import tensorflow as tf
 from tensorflow import keras
 from tqdm import tqdm
 from datetime import datetime as dt
-from model import efficientnetv2_s as create_model
+from model import efficientnetv2_forest as create_model
 from utils import generate_ds
+from pathlib import Path
+
+ps = [p for p in Path("save_weights").glob("*.h5")]
 
 assert tf.version.VERSION >= "2.4.0", "version of tf must greater/equal than 2.4.0"
 
@@ -18,6 +21,10 @@ def main():
     data_root = r"D:/Datasets/Effi"
     if not os.path.exists("./save_weights"):
         os.makedirs("./save_weights")
+
+
+    model_path = Path("save_weights") / Path('Fuse_2_laeyr_211201')
+    os.mkdir(model_path) if not os.path.isdir(model_path) else None
 
     img_size = {"s": [256, 256],  # train_size, val_size
                 "m": [384, 480],
@@ -58,17 +65,12 @@ def main():
     '''
     mod
     '''
-    # pre_weights_path = './efficientnetv2-s.h5'
-    # assert os.path.exists(pre_weights_path), "cannot find {}".format(pre_weights_path)
-    # last_model_path = 'save_weights/'
-    # model.load_weights(last_model_path, by_name=True, skip_mismatch=True)
-    try:
-        # weights_path = './save_weights/efficientnetv2'
-        # assert len(glob.glob(weights_path+"*")), "cannot find {}".format(weights_path)
-        model.load_weights("my_model.h5")
-        print(f"succese load from model path {weights_path}")
-    except:
-        print("no such a weight")
+
+    # try:
+    #     model.load_weights("my_model.h5")
+    #     print(f"succese load from model path {weights_path}")
+    # except:
+    #     print("no such a weight")
     # freeze bottom layers
     '''
     no
@@ -181,7 +183,7 @@ def main():
             best_val_acc = val_accuracy.result()
             now = dt.now()
             # print(f"now is {now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}")
-            save_name = f"./save_weights/efficientnetv2_{now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}_{best_val_acc}.h5"
+            save_name = f"./{model_path}/efficientnetv2_{now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}_{best_val_acc}.h5"
             # model.save_weights(save_name, save_format="tf")
             model.save_weights(save_name)
 

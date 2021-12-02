@@ -352,6 +352,12 @@ class Head(layers.Layer):
         self.act = layers.Activation("swish")
 
         self.avg = layers.GlobalAveragePooling2D()
+        """
+        self dense
+        """
+        self.fc0 = layers.Dense(num_classes,
+                               kernel_initializer=DENSE_KERNEL_INITIALIZER)
+        """"""
         self.fc = layers.Dense(num_classes,
                                kernel_initializer=DENSE_KERNEL_INITIALIZER)
 
@@ -367,6 +373,7 @@ class Head(layers.Layer):
         if self.dropout:
             x = self.dropout(x, training=training)
 
+        x = self.fc0(x)
         x = self.fc(x)
         return x
 
@@ -495,3 +502,25 @@ def efficientnetv2_l(num_classes: int = 1000):
 
 # m = efficientnetv2_s()
 # m.summary()
+
+def efficientnetv2_forest(num_classes: int = 20):
+    """
+    EfficientNetV2
+    https://arxiv.org/abs/2104.00298
+    """
+    # train_size: 384, eval_size: 480
+
+    # repeat, kernel, stride, expansion, in_c, out_c, operator, se_ratio
+    model_config = [[1, 3, 1, 1, 32, 32, 0, 0],
+                    [1, 3, 2, 4, 32, 32, 0, 0],
+                    [0, 3, 2, 4, 64, 64, 0, 0],
+                    [0, 3, 2, 4, 64, 64, 1, 0.25],
+                    [0, 3, 1, 6, 64, 64, 1, 0.25],
+                    [0, 3, 2, 6, 64, 64, 1, 0.25],
+                    [0, 3, 1, 6, 64, 128, 1, 0.25]]
+
+    model = EfficientNetV2(model_cnf=model_config,
+                           num_classes=num_classes,
+                           dropout_rate=0.2,
+                           name="efficientnetv2-forest")
+    return model
