@@ -1,0 +1,2 @@
+model_checkpoint_path: "efficientnetv2_2021_12_8_11_7_0.9654513597488403.ckpt"
+all_model_checkpoint_paths: "efficientnetv2_2021_12_8_11_7_0.9654513597488403.ckpt"

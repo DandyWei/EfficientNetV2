@@ -90,7 +90,8 @@ class MBConv(layers.Layer):
         expanded_c = input_c * expand_ratio
 
         bid = itertools.count(0)
-        get_norm_name = lambda: 'batch_normalization' + ('' if not next(
+
+        get_norm_name = lambda: 'norm' + ('' if not next(
             bid) else '_' + str(next(bid) // 2))
         cid = itertools.count(0)
         get_conv_name = lambda: 'conv2d' + ('' if not next(cid) else '_' + str(
@@ -112,14 +113,14 @@ class MBConv(layers.Layer):
 
 
         '''
-        self.expand_conv = layers.Conv2D(
+        self.conv2d = layers.Conv2D(
             filters=expanded_c,
             kernel_size=1,
             strides=1,
             padding="same",
             use_bias=False,
             name=get_conv_name())
-        self.norm0 = layers.BatchNormalization(
+        self.norm = layers.BatchNormalization(
             axis=-1,
             momentum=0.9,
             epsilon=1e-3,
@@ -134,7 +135,7 @@ class MBConv(layers.Layer):
             padding="same",
             use_bias=False,
             name="depthwise_conv2d")
-        self.norm1 = layers.BatchNormalization(
+        self.norm_1 = layers.BatchNormalization(
             axis=-1,
             momentum=0.9,
             epsilon=1e-3,
@@ -163,7 +164,7 @@ class MBConv(layers.Layer):
             kernel_initializer=CONV_KERNEL_INITIALIZER,
             padding="same",
             use_bias=False,
-            name=get_conv_name())
+            name="project_conv")
         self.norm2 = layers.BatchNormalization(
             axis=-1,
             momentum=0.9,
@@ -184,12 +185,12 @@ class MBConv(layers.Layer):
     def call(self, inputs, training=None):
         x = inputs
 
-        x = self.expand_conv(x)
-        x = self.norm0(x, training=training)
+        x = self.conv2d(x)
+        x = self.norm(x, training=training)
         x = self.act0(x)
 
         x = self.depthwise_conv(x)
-        x = self.norm1(x, training=training)
+        x = self.norm_1(x, training=training)
         x = self.act1(x)
 
         x = self.se(x)
@@ -227,7 +228,7 @@ class FusedMBConv(layers.Layer):
         expanded_c = input_c * expand_ratio
 
         bid = itertools.count(0)
-        get_norm_name = lambda: 'batch_normalization' + ('' if not next(
+        get_norm_name = lambda: 'norm' + ('' if not next(
             bid) else '_' + str(next(bid) // 2))
         cid = itertools.count(0)
         get_conv_name = lambda: 'conv2d' + ('' if not next(cid) else '_' + str(
@@ -238,7 +239,7 @@ class FusedMBConv(layers.Layer):
             2,
         '''
         if expand_ratio != 1:
-            self.expand_conv = layers.Conv2D(
+            self.conv2d = layers.Conv2D(
                 filters=expanded_c,
                 kernel_size=kernel_size,
                 strides=stride,
@@ -246,7 +247,7 @@ class FusedMBConv(layers.Layer):
                 padding="same",
                 use_bias=False,
                 name=get_conv_name())
-            self.norm0 = layers.BatchNormalization(
+            self.norm = layers.BatchNormalization(
                 axis=-1,
                 momentum=0.9,
                 epsilon=1e-3,
@@ -260,8 +261,8 @@ class FusedMBConv(layers.Layer):
             kernel_initializer=CONV_KERNEL_INITIALIZER,
             padding="same",
             use_bias=False,
-            name=get_conv_name())
-        self.norm1 = layers.BatchNormalization(
+            name="project_conv")
+        self.norm_1 = layers.BatchNormalization(
             axis=-1,
             momentum=0.9,
             epsilon=1e-3,
@@ -280,12 +281,12 @@ class FusedMBConv(layers.Layer):
     def call(self, inputs, training=None):
         x = inputs
         if self.has_expansion:
-            x = self.expand_conv(x)
-            x = self.norm0(x, training=training)
+            x = self.conv2d(x)
+            x = self.norm(x, training=training)
             x = self.act0(x)
 
         x = self.project_conv(x)
-        x = self.norm1(x, training=training)
+        x = self.norm_1(x, training=training)
         if self.has_expansion is False:
             x = self.act1(x)
 
@@ -310,12 +311,12 @@ class Stem(layers.Layer):
             kernel_initializer=CONV_KERNEL_INITIALIZER,
             padding="same",
             use_bias=False,
-            name="conv2d")
+            name="conv_stem")
         self.norm = layers.BatchNormalization(
             axis=-1,
             momentum=0.9,
             epsilon=1e-3,
-            name="batch_normalization")
+            name="norm")
         self.act = layers.Activation("swish")
 
     def call(self, inputs, training=None):
@@ -337,7 +338,7 @@ class Head(layers.Layer):
                  drop_rate: float = 0.,
                  name: str = None):
         super(Head, self).__init__(name=name)
-        self.conv_head = layers.Conv2D(
+        self.conv2d = layers.Conv2D(
             filters=filters,
             kernel_size=1,
             kernel_initializer=CONV_KERNEL_INITIALIZER,
@@ -348,24 +349,24 @@ class Head(layers.Layer):
             axis=-1,
             momentum=0.9,
             epsilon=1e-3,
-            name="batch_normalization")
+            name="norm")
         self.act = layers.Activation("swish")
 
         self.avg = layers.GlobalAveragePooling2D()
         """
         self dense
         """
-        self.fc0 = layers.Dense(num_classes,
-                               kernel_initializer=DENSE_KERNEL_INITIALIZER)
+        self.dense = layers.Dense(num_classes * 5,
+                               kernel_initializer=DENSE_KERNEL_INITIALIZER, name="dense")
         """"""
-        self.fc = layers.Dense(num_classes,
-                               kernel_initializer=DENSE_KERNEL_INITIALIZER)
+        self.dense_1 = layers.Dense(num_classes,
+                               kernel_initializer=DENSE_KERNEL_INITIALIZER, name="dense_1")
 
         if drop_rate > 0:
             self.dropout = layers.Dropout(drop_rate)
 
     def call(self, inputs, training=None):
-        x = self.conv_head(inputs)
+        x = self.conv2d(inputs)
         x = self.norm(x)
         x = self.act(x)
         x = self.avg(x)
@@ -373,8 +374,8 @@ class Head(layers.Layer):
         if self.dropout:
             x = self.dropout(x, training=training)
 
-        x = self.fc0(x)
-        x = self.fc(x)
+        x = self.dense(x)
+        x = self.dense_1(x)
         return x
 
 
@@ -409,7 +410,7 @@ class EfficientNetV2(Model):
                                       stride=cnf[2] if i == 0 else 1,
                                       se_ratio=cnf[-1],
                                       drop_rate=drop_connect_rate * block_id / total_blocks,
-                                      name="blocks_{}".format(block_id)))
+                                      name="blocks/{}".format(block_id)))
                 block_id += 1
 
         self.head = Head(num_features, num_classes, dropout_rate)
@@ -521,6 +522,6 @@ def efficientnetv2_forest(num_classes: int = 20):
 
     model = EfficientNetV2(model_cnf=model_config,
                            num_classes=num_classes,
-                           dropout_rate=0.2,
+                           dropout_rate=0.5,
                            name="efficientnetv2-forest")
     return model

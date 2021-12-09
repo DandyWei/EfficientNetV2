@@ -9,8 +9,8 @@ from datetime import datetime as dt
 from model import efficientnetv2_forest as create_model
 from utils import generate_ds
 from pathlib import Path
-
-ps = [p for p in Path("save_weights").glob("*.h5")]
+# Path("Test11_efficientnetV2/save_weights/Fuse_2_laeyr_211201/efficientnetv2_2021_12_2_18_9_0.9856745004653931.h5")
+ps = [p for p in Path("save_weights/Fuse_2_laeyr_211201").glob("*.h5")]
 
 assert tf.version.VERSION >= "2.4.0", "version of tf must greater/equal than 2.4.0"
 
@@ -18,7 +18,8 @@ assert tf.version.VERSION >= "2.4.0", "version of tf must greater/equal than 2.4
 def main():
     # data_root = r"/data/flower_photos"  # get data root path
     # data_root = r"D:/Thinktron/EfficientNetV2/Data/Train"
-    data_root = r"D:/Datasets/Effi"
+    # data_root = r"D:/Datasets/Effi"
+    data_root = r"D:/Datasets/test100"
     if not os.path.exists("./save_weights"):
         os.makedirs("./save_weights")
 
@@ -33,7 +34,7 @@ def main():
 
     batch_size = 32
     epochs = 30
-    num_classes = 20
+    num_classes = 2
     '''
     mod
     '''
@@ -50,25 +51,26 @@ def main():
                                    train_im_width=img_size[num_model][0],
                                    val_im_height=img_size[num_model][1],
                                    val_im_width=img_size[num_model][1],
-                                   batch_size=batch_size)
+                                   batch_size=batch_size,
+                                   val_rate=0.5)
 
     # create model
     model = create_model(num_classes=num_classes)
     '''
-    b, H, W, C
+    b, H, W, C 這裡一定要BUILD不然會報錯
     '''
     model.build((1, img_size[num_model][0], img_size[num_model][0], 17))
 
-    # 下载我提前转好的预训练权重
-    # 链接: https://pan.baidu.com/s/1Pr-pO5sQVySPQnBY8pQH7w  密码: f6hi
-    # load weights
     '''
     mod
     '''
 
     # try:
-    #     model.load_weights("my_model.h5")
-    #     print(f"succese load from model path {weights_path}")
+        #D:\Thinktron\EfficientNetV2\Test11_efficientnetV2\save_weights\Fuse_2_laeyr_211201\efficientnetv2_2021_12_8_8_40_0.9730437994003296.h5
+
+    model_weight_fp = Path("D:\Thinktron\EfficientNetV2\Test11_efficientnetV2\save_weights\Fuse_2_laeyr_211201\efficientnetv2_2021_12_9_1.0_29.ckpt")
+    model.load_weights(model_weight_fp)# , by_name=True, skip_mismatch=True
+    print(f"succese load from model path {model_weight_fp}")
     # except:
     #     print("no such a weight")
     # freeze bottom layers
@@ -131,19 +133,28 @@ def main():
         val_accuracy(val_labels, output)
 
     best_val_acc = 0.
+    c = 0
     for epoch in range(epochs):
-        # train_loss.reset_states()  # clear history info
-        # train_accuracy.reset_states()  # clear history info
-        # val_loss.reset_states()  # clear history info
-        # val_accuracy.reset_states()  # clear history info
+        train_loss.reset_states()  # clear history info
+        train_accuracy.reset_states()  # clear history info
+        val_loss.reset_states()  # clear history info
+        val_accuracy.reset_states()  # clear history info
 
 
 
         # train
         train_bar = tqdm(train_ds)
-        c = 0
-        for images, labels in train_bar:
-            train_step(images, labels)
+        val_bar = tqdm(val_ds)
+
+        # l1 = [[1, 2], [2, 3]]
+        # l2 = [[3, 5], [5, 6]]
+        # for (i, j), (k, l) in zip(l1, l2):
+        #     print(i, j, k, l)
+
+        for (train_images, train_labels), (val_images, val_labels) in zip(train_bar, val_bar):
+            c += 1
+
+            train_step(train_images, train_labels)
 
             # print train process
             train_bar.desc = "train epoch[{}/{}] loss:{:.3f}, acc:{:.3f}".format(epoch + 1,
@@ -151,21 +162,26 @@ def main():
                                                                                  train_loss.result(),
                                                                                  train_accuracy.result())
 
+            val_step(val_images, val_labels)
 
+            val_bar.desc = "valid epoch[{}/{}] loss:{:.3f}, acc:{:.3f}".format(epoch + 1,
+                                                                               epochs,
+                                                                               val_loss.result(),
+                                                                               val_accuracy.result())
 
         # update learning rate
         optimizer.learning_rate = scheduler(epoch)
 
         # validate
-        val_bar = tqdm(val_ds)
-        for images, labels in val_bar:
-            val_step(images, labels)
-
-            # print val process
-            val_bar.desc = "valid epoch[{}/{}] loss:{:.3f}, acc:{:.3f}".format(epoch + 1,
-                                                                               epochs,
-                                                                               val_loss.result(),
-                                                                               val_accuracy.result())
+        # val_bar = tqdm(val_ds)
+        # for images, labels in val_bar:
+        #     val_step(images, labels)
+        #
+        #     # print val process
+            # val_bar.desc = "valid epoch[{}/{}] loss:{:.3f}, acc:{:.3f}".format(epoch + 1,
+            #                                                                    epochs,
+            #                                                                    val_loss.result(),
+            #                                                                    val_accuracy.result())
 
 
         # writing training loss and acc
@@ -179,13 +195,13 @@ def main():
             tf.summary.scalar("accuracy", val_accuracy.result(), epoch)
 
         # only save best weights
-        if val_accuracy.result() > best_val_acc:
-            best_val_acc = val_accuracy.result()
-            now = dt.now()
-            # print(f"now is {now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}")
-            save_name = f"./{model_path}/efficientnetv2_{now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}_{best_val_acc}.h5"
-            # model.save_weights(save_name, save_format="tf")
-            model.save_weights(save_name)
+        # if val_accuracy.result() > best_val_acc:
+        best_val_acc = val_accuracy.result()
+        now = dt.now()
+        # print(f"now is {now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}")
+        save_name = f"./{model_path}/efficientnetv2_{now.year}_{now.month}_{now.day}_{best_val_acc}_{epoch}.ckpt"
+        # model.save_weights(save_name, save_format="tf")
+        model.save_weights(save_name, save_format="tf")
 
 
 if __name__ == '__main__':

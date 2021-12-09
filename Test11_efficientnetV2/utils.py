@@ -82,7 +82,7 @@ def generate_ds(data_root: str,
                 val_im_height: int = None,
                 val_im_width: int = None,
                 batch_size: int = 8,
-                val_rate: float = 0.1,
+                val_rate: float = 0.5,
                 cache_data: bool = False):
     """
     读取划分数据集，并生成训练集和验证集的迭代器
@@ -171,13 +171,13 @@ def generate_ds(data_root: str,
         return tf.py_function(process_val_info, [file, labels], [tf.float32, tf.int32])
     # Use Dataset.map to create a dataset of image, label pairs
     train_ds = train_ds.map(load_image_wrapper_train, num_parallel_calls=AUTOTUNE)
-    train_ds = configure_for_performance(train_ds, 1000, shuffle=True, cache=cache_data)
+    train_ds = configure_for_performance(train_ds, 100, shuffle=True, cache=cache_data)
 
     val_ds = tf.data.Dataset.from_tensor_slices((tf.constant(val_img_path),
                                                  tf.constant(val_img_label)))
     total_val = len(val_img_path)
     # Use Dataset.map to create a dataset of image, label pairs
     val_ds = val_ds.map(load_image_wrapper_val, num_parallel_calls=AUTOTUNE)
-    val_ds = configure_for_performance(val_ds, 1000, cache=False)
+    val_ds = configure_for_performance(val_ds, 100, cache=False)
 
     return train_ds, val_ds
