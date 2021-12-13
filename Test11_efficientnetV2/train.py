@@ -10,7 +10,7 @@ from model import efficientnetv2_forest as create_model
 from utils import generate_ds
 from pathlib import Path
 # Path("Test11_efficientnetV2/save_weights/Fuse_2_laeyr_211201/efficientnetv2_2021_12_2_18_9_0.9856745004653931.h5")
-ps = [p for p in Path("save_weights/Fuse_2_laeyr_211201").glob("*.h5")]
+# ps = [p for p in Path("save_weights/Fuse_2_laeyr_211201").glob("*.h5")]
 
 assert tf.version.VERSION >= "2.4.0", "version of tf must greater/equal than 2.4.0"
 
@@ -19,7 +19,7 @@ def main():
     # data_root = r"/data/flower_photos"  # get data root path
     # data_root = r"D:/Thinktron/EfficientNetV2/Data/Train"
     # data_root = r"D:/Datasets/Effi"
-    data_root = r"D:/Datasets/test100"
+    data_root = r"D:/Datasets/Effi"
     if not os.path.exists("./save_weights"):
         os.makedirs("./save_weights")
 
@@ -34,7 +34,7 @@ def main():
 
     batch_size = 32
     epochs = 30
-    num_classes = 2
+    num_classes = 20
     '''
     mod
     '''
@@ -68,9 +68,11 @@ def main():
     # try:
         #D:\Thinktron\EfficientNetV2\Test11_efficientnetV2\save_weights\Fuse_2_laeyr_211201\efficientnetv2_2021_12_8_8_40_0.9730437994003296.h5
 
-    model_weight_fp = Path("D:\Thinktron\EfficientNetV2\Test11_efficientnetV2\save_weights\Fuse_2_laeyr_211201\efficientnetv2_2021_12_9_1.0_29.ckpt")
+    model_weight_fp = Path("D:\Thinktron\EfficientNetV2\Test11_efficientnetV2\save_weights\Fuse_2_laeyr_211201\efficientnetv2_2021_12_10_0.8094145655632019_6.ckpt")
     model.load_weights(model_weight_fp)# , by_name=True, skip_mismatch=True
     print(f"succese load from model path {model_weight_fp}")
+
+
     # except:
     #     print("no such a weight")
     # freeze bottom layers
