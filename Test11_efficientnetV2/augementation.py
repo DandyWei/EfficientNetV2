@@ -39,6 +39,9 @@ def augmentation_image(image, rotation_range=20, shear_range=0.2, scale_range=1.
 def gen_new_names(p, c):
     return str(p.parent / p.stem) + f'_{c}.npy'
 
+
+
+
 if __name__ == "__main__":
     import os
     import numpy as np

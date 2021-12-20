@@ -1,5 +1,5 @@
 from pathlib import Path
-import os, shutil
+import os, shutil, numpy as np
 dataset_dir = Path("D:/Datasets/Effi")
 """
 str len 27
@@ -38,6 +38,14 @@ def clean_argment():
             os.remove(d)
             print(d.name)
 
+def check_size(fp):
+    if np.load(fp).shape[0] != 256:
+        os.remove(fp)
+
 
 if __name__ == "__main__":
-    get_test_data()
+    from multiprocessing import Pool as pool
+    fps = [img_fp for img_fp in dataset_dir.glob("*/*")]
+
+    with pool(processes=4) as p:
+        p.map(check_size, fps)
