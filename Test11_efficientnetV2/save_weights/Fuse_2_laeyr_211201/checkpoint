@@ -1,2 +1,2 @@
-model_checkpoint_path: "efficientnetv2_2021_12_12_0.8437734246253967_11.ckpt"
-all_model_checkpoint_paths: "efficientnetv2_2021_12_12_0.8437734246253967_11.ckpt"
+model_checkpoint_path: "efficientnetv2_2021_12_19_0.855377197265625_29.ckpt"
+all_model_checkpoint_paths: "efficientnetv2_2021_12_19_0.855377197265625_29.ckpt"

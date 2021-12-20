@@ -68,9 +68,9 @@ def main():
     # try:
         #D:\Thinktron\EfficientNetV2\Test11_efficientnetV2\save_weights\Fuse_2_laeyr_211201\efficientnetv2_2021_12_8_8_40_0.9730437994003296.h5
 
-    model_weight_fp = Path("D:\Thinktron\EfficientNetV2\Test11_efficientnetV2\save_weights\Fuse_2_laeyr_211201\efficientnetv2_2021_12_10_0.8094145655632019_6.ckpt")
-    model.load_weights(model_weight_fp)# , by_name=True, skip_mismatch=True
-    print(f"succese load from model path {model_weight_fp}")
+    model_weight_fp = Path("D:\Thinktron\EfficientNetV2\Test11_efficientnetV2\save_weights\Fuse_2_laeyr_211201\efficientnetv2_2021_12_14_0.8457319736480713_4.ckpt")
+    # model.load_weights(model_weight_fp)# , by_name=True, skip_mismatch=True
+    # print(f"succese load from model path {model_weight_fp}")
 
 
     # except:

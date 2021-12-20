@@ -50,18 +50,18 @@ if __name__ == "__main__":
         i = str(i).zfill(2)
         ps =[p for p in Path(f"D:/Datasets/Effi/{i}").glob("*")]
         file_cnt = len(ps)
-        if file_cnt < 8900:
+        if file_cnt < 8000:
             print(f"start argmentation cls {i}")
         c = 0
         print(file_cnt)
-        while file_cnt < 8900:
+        while file_cnt < 8000:
             print(f"files numbers = {file_cnt}")
             for p in tqdm(ps):
                 x = np.load(p)
                 x_aug = augmentation_image(x)
                 np.save(gen_new_names(p, c), x_aug)
                 file_cnt = len([p for p in Path(f"D:/Datasets/Effi/{i}").glob("*")])
-                if file_cnt > 8900:
+                if file_cnt > 8000:
                     break
 
             c += 1
