@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 # x = np.load(Path(b'U:/GR2101_110\xe5\xb9\xb4\xe6\xa3\xae\xe6\x9e\x97AI/03_GIS\xe8\xb3\x87\xe6\x96\x99/CodeGeneration/training_npy/Effi\\12\\100116h_39_0047_1513_050_013.npy'))
 # x.shape
 
+
 def read_split_data(root: str, val_rate: float = 0.2):
     random.seed(0)  # 保证随机划分结果一致
     assert os.path.exists(root), "dataset root: {} does not exist.".format(root)
@@ -50,6 +51,7 @@ def read_split_data(root: str, val_rate: float = 0.2):
             else:  # 否则存入训练集
                 train_images_path.append(img_path)
                 train_images_label.append(image_class)
+
 
     print("{} images were found in the dataset.\n{} for training, {} for validation".format(sum(every_class_num),
                                                                                             len(train_images_path),
@@ -110,34 +112,34 @@ def generate_ds(data_root: str,
         # image = tf.io.read_file(img_path)
         # print(f'Eagertensor = {img_path}, numpy = {img_path.numpy()}')
         # print(f"path {img_path.numpy()}")
-        try:
-            image = np.load(img_path.numpy())
-            # print( f'images load = {image}')
-            # image = tf.image.decode_jpeg(image, channels=3)
-            image = tf.cast(image, tf.float32)
-            image = tf.image.resize_with_crop_or_pad(image, train_im_height, train_im_width)
-            image = tf.image.random_flip_left_right(image)
-            # image = (image / 255. - 0.5) / 0.5
-        except:
-            print(f"img names : {img_path.numpy()}")
-            image, label = process_train_info(img_path, label)
-            return image, label
+        # try:
+        image = np.load(img_path.numpy())
+        # print( f'images load = {image}')
+        # image = tf.image.decode_jpeg(image, channels=3)
+        image = tf.cast(image, tf.float32)
+        image = tf.image.resize_with_crop_or_pad(image, train_im_height, train_im_width)
+        image = tf.image.random_flip_left_right(image)
+        # image = (image / 255. - 0.5) / 0.5
+        # except:
+        #     print(f"img names : {img_path.numpy()}")
+        #     image, label = process_train_info(img_path, label)
+        #     return image, label
         return image, label
 
     def process_val_info(img_path, label):
         # image = tf.io.read_file(img_path)
-        try:
-            image = np.load(img_path.numpy())
+        # try:
+        image = np.load(img_path.numpy())
 
-            # image = tf.image.decode_jpeg(image, channels=3)
-            image = tf.cast(image, tf.float32)
-            image = tf.image.resize_with_crop_or_pad(image, val_im_height, val_im_width)
-            # image = (image / 255. - 0.5) / 0.5
+        # image = tf.image.decode_jpeg(image, channels=3)
+        image = tf.cast(image, tf.float32)
+        image = tf.image.resize_with_crop_or_pad(image, val_im_height, val_im_width)
+        # image = (image / 255. - 0.5) / 0.5
 
-        except:
-            print(f"img names : {img_path.numpy()}")
-            image, label = process_train_info(img_path, label)
-            return image, label
+        # except:
+        #     print(f"img names : {img_path.numpy()}")
+        #     image, label = process_train_info(img_path, label)
+        #     return image, label
         return image, label
 
     # def process_train_info(img_path, label):

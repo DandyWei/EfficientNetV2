@@ -24,7 +24,7 @@ def main():
         os.makedirs("./save_weights")
 
 
-    model_path = Path("save_weights") / Path('Fuse_2_laeyr_211201')
+    model_path = Path("save_weights") / Path('Fuse_2_laeyr_211223')
     os.mkdir(model_path) if not os.path.isdir(model_path) else None
 
     img_size = {"s": [256, 256],  # train_size, val_size
@@ -32,7 +32,7 @@ def main():
                 "l": [384, 480]}
     num_model = "s"
 
-    batch_size = 32
+    batch_size = 8
     epochs = 30
     num_classes = 20
     '''
@@ -51,8 +51,7 @@ def main():
                                    train_im_width=img_size[num_model][0],
                                    val_im_height=img_size[num_model][1],
                                    val_im_width=img_size[num_model][1],
-                                   batch_size=batch_size,
-                                   val_rate=0.5)
+                                   batch_size=batch_size)
 
     # create model
     model = create_model(num_classes=num_classes)
@@ -65,16 +64,13 @@ def main():
     mod
     '''
 
-    # try:
-        #D:\Thinktron\EfficientNetV2\Test11_efficientnetV2\save_weights\Fuse_2_laeyr_211201\efficientnetv2_2021_12_8_8_40_0.9730437994003296.h5
-
-    model_weight_fp = Path("D:\Thinktron\EfficientNetV2\Test11_efficientnetV2\save_weights\Fuse_2_laeyr_211201\efficientnetv2_2021_12_14_0.8457319736480713_4.ckpt")
-    # model.load_weights(model_weight_fp)# , by_name=True, skip_mismatch=True
-    # print(f"succese load from model path {model_weight_fp}")
-
-
-    # except:
-    #     print("no such a weight")
+    try:
+            #D:\Thinktron\EfficientNetV2\Test11_efficientnetV2\save_weights\Fuse_2_laeyr_211201\efficientnetv2_2021_12_8_8_40_0.9730437994003296.h5
+        model_weight_fp = Path("./save_weights/efficientnetv2.ckpt")
+        model.load_weights(model_weight_fp )# , by_name=True, skip_mismatch=True
+        # print(f"succese load from model path {model_weight_fp}")
+    except:
+        print("no such a weight")
     # freeze bottom layers
     '''
     no
@@ -146,13 +142,18 @@ def main():
 
         # train
         train_bar = tqdm(train_ds)
-        val_bar = tqdm(val_ds)
+        for images, labels in train_bar:
+            train_step(images, labels)
 
-        # l1 = [[1, 2], [2, 3]]
-        # l2 = [[3, 5], [5, 6]]
-        # for (i, j), (k, l) in zip(l1, l2):
-        #     print(i, j, k, l)
+            # print train process
+            train_bar.desc = "train epoch[{}/{}] loss:{:.3f}, acc:{:.3f}".format(epoch + 1,
+                                                                                 epochs,
+                                                                                 train_loss.result(),
+                                                                                 train_accuracy.result())
 
+        # update learning rate
+        optimizer.learning_rate = scheduler(epoch)
+        '''
         for (train_images, train_labels), (val_images, val_labels) in zip(train_bar, val_bar):
             c += 1
 
@@ -171,19 +172,19 @@ def main():
                                                                                val_loss.result(),
                                                                                val_accuracy.result())
 
-        # update learning rate
-        optimizer.learning_rate = scheduler(epoch)
+
+        '''
 
         # validate
-        # val_bar = tqdm(val_ds)
-        # for images, labels in val_bar:
-        #     val_step(images, labels)
-        #
-        #     # print val process
-            # val_bar.desc = "valid epoch[{}/{}] loss:{:.3f}, acc:{:.3f}".format(epoch + 1,
-            #                                                                    epochs,
-            #                                                                    val_loss.result(),
-            #                                                                    val_accuracy.result())
+        val_bar = tqdm(val_ds)
+        for images, labels in val_bar:
+            val_step(images, labels)
+
+            # print val process
+            val_bar.desc = "valid epoch[{}/{}] loss:{:.3f}, acc:{:.3f}".format(epoch + 1,
+                                                                               epochs,
+                                                                               val_loss.result(),
+                                                                               val_accuracy.result())
 
 
         # writing training loss and acc
@@ -198,12 +199,10 @@ def main():
 
         # only save best weights
         # if val_accuracy.result() > best_val_acc:
-        best_val_acc = val_accuracy.result()
-        now = dt.now()
-        # print(f"now is {now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}")
-        save_name = f"./{model_path}/efficientnetv2_{now.year}_{now.month}_{now.day}_{best_val_acc}_{epoch}.ckpt"
-        # model.save_weights(save_name, save_format="tf")
-        model.save_weights(save_name, save_format="tf")
+        if val_accuracy.result() > best_val_acc:
+            best_val_acc = val_accuracy.result()
+            save_name = "./save_weights/efficientnetv2.ckpt"
+            model.save_weights(save_name, save_format="tf")
 
 
 if __name__ == '__main__':

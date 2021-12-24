@@ -359,11 +359,11 @@ class Head(layers.Layer):
         self.dense = layers.Dense(num_classes * 5,
                                kernel_initializer=DENSE_KERNEL_INITIALIZER, name="dense")
         """"""
-        self.dense_1 = layers.Dense(num_classes,
-                               kernel_initializer=DENSE_KERNEL_INITIALIZER, name="dense_1")
-
         if drop_rate > 0:
             self.dropout = layers.Dropout(drop_rate)
+
+        self.dense_1 = layers.Dense(num_classes,
+                               kernel_initializer=DENSE_KERNEL_INITIALIZER, name="dense_1", activation='softmax')
 
     def call(self, inputs, training=None):
         x = self.conv2d(inputs)
@@ -522,6 +522,6 @@ def efficientnetv2_forest(num_classes: int = 20):
 
     model = EfficientNetV2(model_cnf=model_config,
                            num_classes=num_classes,
-                           dropout_rate=0.5,
+                           dropout_rate=0.1,
                            name="efficientnetv2-forest")
     return model
